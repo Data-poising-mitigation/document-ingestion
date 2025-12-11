@@ -32,11 +32,10 @@ jobs:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_REGION: ${{ secrets.GCP_REGION }}
         run: |
-          echo "GCP_PROJECT_ID secret value seen by runner: '${GCP_PROJECT_ID}'" 
+          echo "GCP_PROJECT_ID secret value seen by runner: '${GCP_PROJECT_ID}'"
           echo "GCP_REGION secret value seen by runner: '${GCP_REGION}'"
           echo "gcloud config project: '$(gcloud config get-value project 2>/dev/null)'"
           echo "GOOGLE_CLOUD_PROJECT env: '${GOOGLE_CLOUD_PROJECT:-<unset>}'"
-
 
       - name: Debug gcloud auth
         run: |
@@ -45,11 +44,13 @@ jobs:
 
       - name: List Artifact Registry repos
         env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_REGION: ${{ secrets.GCP_REGION }}
         run: |
-          echo "Listing Artifact Registry repos in region ${GCP_REGION}..."
-          gcloud artifacts repositories list --location="${GCP_REGION}"
-
+          echo "Listing Artifact Registry repos in region ${GCP_REGION} for project ${GCP_PROJECT_ID}..."
+          gcloud artifacts repositories list \
+            --project="${GCP_PROJECT_ID}" \
+            --location="${GCP_REGION}"
 
       - name: Configure Docker auth for Artifact Registry
         env:
@@ -62,8 +63,10 @@ jobs:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_REGION: ${{ secrets.GCP_REGION }}
         run: |
-          echo "Listing Artifact Registry repos in region ${GCP_REGION}..."
-          gcloud artifacts repositories list --location="${GCP_REGION}"
+          echo "Listing Artifact Registry repos in region ${GCP_REGION} for project ${GCP_PROJECT_ID}..."
+          gcloud artifacts repositories list \
+            --project="${GCP_PROJECT_ID}" \
+            --location="${GCP_REGION}"
 
           echo "Testing docker login..."
           echo "$(gcloud auth print-access-token)" | docker login \
@@ -93,13 +96,15 @@ jobs:
           INSTANCE_CONNECTION_NAME: ${{ secrets.INSTANCE_CONNECTION_NAME }}
         run: |
           # Write env vars to a file in KEY=VALUE format.
-          cat > env_vars.txt <<EOF
+          cat <<EOF > env_vars.txt
 DB_NAME=${DB_NAME}
 DB_USER=${DB_USER}
 DB_PASSWORD=${DB_PASSWORD}
 DB_PORT=5432
 INSTANCE_CONNECTION_NAME=${INSTANCE_CONNECTION_NAME}
 EOF
+
+          echo "Deploying service ${CLOUD_RUN_SERVICE} to region ${GCP_REGION} in project ${GCP_PROJECT_ID}..."
 
           gcloud run deploy "$CLOUD_RUN_SERVICE" \
             --project="$GCP_PROJECT_ID" \
