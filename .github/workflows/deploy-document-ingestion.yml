@@ -27,52 +27,6 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Debug project & region config
-        env:
-          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          GCP_REGION: ${{ secrets.GCP_REGION }}
-        run: |
-          echo "GCP_PROJECT_ID secret value seen by runner: '${GCP_PROJECT_ID}'"
-          echo "GCP_REGION secret value seen by runner: '${GCP_REGION}'"
-          echo "gcloud config project: '$(gcloud config get-value project 2>/dev/null)'"
-          echo "GOOGLE_CLOUD_PROJECT env: '${GOOGLE_CLOUD_PROJECT:-<unset>}'"
-
-      - name: Debug gcloud auth
-        run: |
-          echo "=== gcloud auth list ==="
-          gcloud auth list
-
-      - name: List Artifact Registry repos
-        env:
-          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          GCP_REGION: ${{ secrets.GCP_REGION }}
-        run: |
-          echo "Listing Artifact Registry repos in region ${GCP_REGION} for project ${GCP_PROJECT_ID}..."
-          gcloud artifacts repositories list \
-            --project="${GCP_PROJECT_ID}" \
-            --location="${GCP_REGION}"
-
-      - name: Configure Docker auth for Artifact Registry
-        env:
-          GCP_REGION: ${{ secrets.GCP_REGION }}
-        run: |
-          gcloud auth configure-docker "${GCP_REGION}-docker.pkg.dev" --quiet
-
-      - name: Test Artifact Registry auth
-        env:
-          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          GCP_REGION: ${{ secrets.GCP_REGION }}
-        run: |
-          echo "Listing Artifact Registry repos in region ${GCP_REGION} for project ${GCP_PROJECT_ID}..."
-          gcloud artifacts repositories list \
-            --project="${GCP_PROJECT_ID}" \
-            --location="${GCP_REGION}"
-
-          echo "Testing docker login..."
-          echo "$(gcloud auth print-access-token)" | docker login \
-            -u oauth2accesstoken --password-stdin \
-            "https://${GCP_REGION}-docker.pkg.dev"
-
       - name: Build and push Docker image
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -92,7 +46,6 @@ jobs:
           CLOUD_RUN_SERVICE: ${{ secrets.CLOUD_RUN_SERVICE }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           INSTANCE_CONNECTION_NAME: ${{ secrets.INSTANCE_CONNECTION_NAME }}
         run: |
           echo "Deploying service ${CLOUD_RUN_SERVICE} to region ${GCP_REGION} in project ${GCP_PROJECT_ID}..."
@@ -106,9 +59,9 @@ jobs:
             --port=8080 \
             --set-env-vars "DB_NAME=${DB_NAME}" \
             --set-env-vars "DB_USER=${DB_USER}" \
-            --set-env-vars "DB_PASSWORD=${DB_PASSWORD}" \
             --set-env-vars "DB_PORT=5432" \
             --set-env-vars "INSTANCE_CONNECTION_NAME=${INSTANCE_CONNECTION_NAME}" \
+            --set-secrets "DB_PASSWORD=db-password:latest" \
             --add-cloudsql-instances="${INSTANCE_CONNECTION_NAME}" \
             --max-instances=2 \
             --min-instances=0
