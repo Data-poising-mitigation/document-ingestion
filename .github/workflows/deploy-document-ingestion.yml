@@ -23,6 +23,12 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
+      - name: Debug gcloud auth
+        run: |
+          echo "=== gcloud auth list ==="
+          gcloud auth list
+          echo "=== gcloud config list ==="
+          gcloud config list
 
       - name: Configure Docker auth for Artifact Registry
         env:
