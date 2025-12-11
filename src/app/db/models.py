@@ -55,7 +55,7 @@ class Chunk(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     document = relationship("Document", back_populates="chunks")
-    embeddings = relationship(
+    embeddings = relationship( 
         "ChunkEmbedding",
         back_populates="chunk",
         cascade="all, delete-orphan",
