@@ -31,8 +31,14 @@ jobs:
         run: |
           echo "=== gcloud auth list ==="
           gcloud auth list
-          echo "=== gcloud config list ==="
-          gcloud config list
+
+      - name: List Artifact Registry repos
+        env:
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+        run: |
+          echo "Listing Artifact Registry repos in region ${GCP_REGION}..."
+          gcloud artifacts repositories list --location="${GCP_REGION}"
+
 
       - name: Configure Docker auth for Artifact Registry
         env:
