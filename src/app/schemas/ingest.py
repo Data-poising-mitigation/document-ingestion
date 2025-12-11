@@ -18,3 +18,4 @@ class IngestRequest(BaseModel):
 
 class IngestResponse(BaseModel):
     document_id: str
+ 
