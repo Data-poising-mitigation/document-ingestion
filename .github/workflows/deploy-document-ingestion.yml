@@ -27,6 +27,17 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
+      - name: Debug project & region config
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+        run: |
+          echo "GCP_PROJECT_ID secret value seen by runner: '${GCP_PROJECT_ID}'"
+          echo "GCP_REGION secret value seen by runner: '${GCP_REGION}'"
+          echo "gcloud config project: '$(gcloud config get-value project 2>/dev/null)'"
+          echo "GOOGLE_CLOUD_PROJECT env: '${GOOGLE_CLOUD_PROJECT:-<unset>}'"
+
+
       - name: Debug gcloud auth
         run: |
           echo "=== gcloud auth list ==="
