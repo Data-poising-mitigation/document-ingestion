@@ -92,6 +92,15 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           INSTANCE_CONNECTION_NAME: ${{ secrets.INSTANCE_CONNECTION_NAME }}
         run: |
+          # Write env vars to a file in KEY=VALUE format.
+          cat > env_vars.txt <<EOF
+DB_NAME=${DB_NAME}
+DB_USER=${DB_USER}
+DB_PASSWORD=${DB_PASSWORD}
+DB_PORT=5432
+INSTANCE_CONNECTION_NAME=${INSTANCE_CONNECTION_NAME}
+EOF
+
           gcloud run deploy "$CLOUD_RUN_SERVICE" \
             --project="$GCP_PROJECT_ID" \
             --region="$GCP_REGION" \
@@ -99,7 +108,7 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --port=8080 \
-            --set-env-vars="DB_NAME=${DB_NAME},DB_USER=${DB_USER},DB_PASSWORD=${DB_PASSWORD},DB_PORT=5432,INSTANCE_CONNECTION_NAME=${INSTANCE_CONNECTION_NAME}" \
+            --env-vars-file=env_vars.txt \
             --add-cloudsql-instances="${INSTANCE_CONNECTION_NAME}" \
             --max-instances=2 \
             --min-instances=0
