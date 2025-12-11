@@ -23,4 +23,4 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
 
 # Command: run FastAPI via Uvicorn
-CMD ["uvicorn", "text_ingestion.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

@@ -24,19 +24,24 @@ class Settings(BaseModel):
         - on Cloud Run via Unix socket (/cloudsql/INSTANCE_CONNECTION_NAME)
         """
         if self.db_host:
-            # Local dev: use TCP host (e.g. Cloud SQL public IP)
-            host_part = self.db_host
-        elif self.instance_connection_name:
-            # Cloud Run: use Unix domain socket path
-            host_part = f"/cloudsql/{self.instance_connection_name}"
-        else:
-            # Fallback for e.g. local Docker compose or default
-            host_part = "localhost"
+            # Local dev: TCP host (e.g. 127.0.0.1 or Cloud SQL public IP)
+            return (
+                f"postgresql+psycopg://{self.db_user}:{self.db_password}"
+                f"@{self.db_host}:{self.db_port}/{self.db_name}"
+            )
 
+        if self.instance_connection_name:
+            # Cloud Run: Unix socket
+            socket_path = f"/cloudsql/{self.instance_connection_name}"
+            return (
+                f"postgresql+psycopg://{self.db_user}:{self.db_password}"
+                f"@/{self.db_name}?host={socket_path}"
+            )
+
+        # Fallback (e.g. everything local)
         return (
             f"postgresql+psycopg://{self.db_user}:{self.db_password}"
-            f"@{host_part}:{self.db_port}/{self.db_name}"
+            f"@localhost:{self.db_port}/{self.db_name}"
         )
-
 
 settings = Settings()
