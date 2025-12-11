@@ -59,7 +59,7 @@ class Chunk(Base):
         "ChunkEmbedding",
         back_populates="chunk",
         cascade="all, delete-orphan",
-    )
+    ) 
     
 class ChunkEmbedding(Base):
     __tablename__ = "chunk_embeddings"
