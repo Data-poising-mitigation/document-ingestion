@@ -60,7 +60,7 @@ class Chunk(Base):
         back_populates="chunk",
         cascade="all, delete-orphan",
     )
-
+   
 class ChunkEmbedding(Base):
     __tablename__ = "chunk_embeddings"
     __table_args__ = (UniqueConstraint("chunk_id", "embedder_name", name="ux_chunk_embeddings_chunk_embedder"),)
