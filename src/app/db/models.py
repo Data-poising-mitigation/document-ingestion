@@ -73,7 +73,7 @@ class ChunkEmbedding(Base):
     )
     embedder_name = Column(String, nullable=False)
     embedding_dim = Column(Integer, nullable=False)
-    embedding = Column(Vector(384), nullable=False)  # adjust dim if you change schema
+    embedding = Column(Vector(384), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     chunk = relationship("Chunk", back_populates="embeddings")
