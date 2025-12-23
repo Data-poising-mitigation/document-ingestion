@@ -43,7 +43,7 @@ def check_db_connection(raise_on_error: bool = False) -> bool:
 
     Returns True if the DB is reachable, False otherwise.
     If raise_on_error is True, re-raises the OperationalError.
-    """
+    """ 
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
