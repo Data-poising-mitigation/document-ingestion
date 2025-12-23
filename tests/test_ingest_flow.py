@@ -2,11 +2,12 @@ import uuid
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock
 
-from app.main import app
+from app.main import create_app
 from app.api import ingest as ingest_api
 from app.ingestion.basic import BasicIngestion
 from app.schemas.ingest import IngestRequest, IngestResponse
 
+app = create_app()
 
 def test_ingest_route_uses_stubbed_ingestor(monkeypatch):
     # Stub ingestor and DB dependency so no real DB is touched.
