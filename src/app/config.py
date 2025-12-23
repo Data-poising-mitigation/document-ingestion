@@ -1,47 +1,25 @@
 import os
 from pydantic import BaseModel
 from dotenv import load_dotenv
+
 load_dotenv()
 
+
 class Settings(BaseModel):
-    # Common settings
-    db_name: str = os.getenv("DB_NAME", "ragdb")
-    db_user: str = os.getenv("DB_USER", "postgres")
-    db_password: str = os.getenv("DB_PASSWORD", "postgres")
-    db_port: int = int(os.getenv("DB_PORT", "5432"))
+    service_name: str = os.getenv("SERVICE_NAME", "document-ingestion")
+    port: int = int(os.getenv("PORT", "8080"))
 
-    # For local TCP connection
-    db_host: str | None = os.getenv("DB_HOST")
+    # Single source of truth for DB access (local + Cloud Run)
+    database_url: str = os.getenv("DATABASE_URL", "").strip()
 
-    # For Cloud Run → Cloud SQL via Unix socket
-    instance_connection_name: str | None = os.getenv("INSTANCE_CONNECTION_NAME")
-
-    @property
-    def sqlalchemy_url(self) -> str:
-        """
-        Build a SQLAlchemy URL that works either:
-        - locally via TCP (DB_HOST set)
-        - on Cloud Run via Unix socket (/cloudsql/INSTANCE_CONNECTION_NAME)
-        """
-        if self.db_host:
-            # Local dev: TCP host (e.g. 127.0.0.1 or Cloud SQL public IP)
-            return (
-                f"postgresql+psycopg://{self.db_user}:{self.db_password}"
-                f"@{self.db_host}:{self.db_port}/{self.db_name}"
+    def __init__(self, **data):
+        super().__init__(**data)
+        if not self.database_url:
+            raise ValueError(
+                "DATABASE_URL is not set. "
+                "Set it to your Supabase session pooler connection string "
+                "and include '?sslmode=require'."
             )
 
-        if self.instance_connection_name:
-            # Cloud Run: Unix socket
-            socket_path = f"/cloudsql/{self.instance_connection_name}"
-            return (
-                f"postgresql+psycopg://{self.db_user}:{self.db_password}"
-                f"@/{self.db_name}?host={socket_path}"
-            )
-
-        # Fallback (e.g. everything local)
-        return (
-            f"postgresql+psycopg://{self.db_user}:{self.db_password}"
-            f"@localhost:{self.db_port}/{self.db_name}"
-        )
 
 settings = Settings()
